@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>BRAWL ARENA</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;min-height:100dvh;overflow:hidden;
+  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;touch-action:none;}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;min-height:100dvh;padding:14px;}
+.screen.active{display:flex;}
+#home-screen{background:radial-gradient(ellipse at 50% 30%,#1a0a4e,#0a0a1a);}
+#home-screen h1{font-size:36px;font-weight:900;color:#ffe066;
+  text-shadow:0 0 24px #fa0,0 4px 0 #840;letter-spacing:3px;margin-bottom:3px;}
+.sub{color:#8af;font-size:11px;margin-bottom:16px;}
+.menu-btn{background:linear-gradient(135deg,#ffe066,#fa0);color:#111;
+  font-weight:900;font-size:16px;border:none;border-radius:40px;
+  padding:11px 38px;cursor:pointer;box-shadow:0 5px 0 #840;
+  margin:4px;-webkit-appearance:none;min-width:190px;transition:transform .1s;}
+.menu-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #840;}
+.menu-btn.sec{background:linear-gradient(135deg,#2ef,#0aa);box-shadow:0 5px 0 #055;}
+.menu-btn.sec:active{box-shadow:0 2px 0 #055;}
+#continue-box{background:linear-gradient(135deg,#1a1a3e,#0a2a2e);
+  border:2px solid #2ef;border-radius:12px;padding:10px 18px;margin-bottom:10px;
+  text-align:center;min-width:210px;}
+#continue-box .ctitle{color:#ffe066;font-weight:900;font-size:13px;margin-bottom:3px;}
+#continue-box .cinfo{color:#afc;font-size:11px;line-height:1.8;}
+#char-screen{background:radial-gradient(ellipse at 50% 30%,#0a1a3e,#0a0a1a);}
+#char-screen h2{font-size:22px;font-weight:900;color:#ffe066;margin-bottom:2px;}
+#char-list{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+.ccard{width:116px;background:linear-gradient(160deg,#1a1a3e,#0a2a2e);
+  border:3px solid #445;border-radius:12px;padding:10px 7px;
+  cursor:pointer;text-align:center;transition:all .15s;}
+.ccard.sel{border-color:#ffe066;box-shadow:0 0 14px #fa08;}
+.ccard .icon{font-size:30px;margin-bottom:3px;}
+.ccard .name{font-weight:900;font-size:12px;margin-bottom:3px;}
+.cbar{height:4px;border-radius:2px;margin:2px 0;background:#222;overflow:hidden;}
+.cbar-fill{height:100%;border-radius:2px;}
+.clabel{font-size:9px;color:#8af;text-align:left;margin-top:2px;}
+.ult-name{font-size:9px;color:#fa0;margin-top:5px;font-weight:900;}
+.ult-desc{font-size:8px;color:#888;margin-top:2px;line-height:1.4;}
+#game-screen{background:#0a0a1a;padding:0;justify-content:flex-start;padding-top:3px;}
+#hud{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;
+  margin-bottom:2px;padding:0 5px;}
+.hbox{background:linear-gradient(135deg,#1a0a3e,#0a3a2a);border:2px solid #2ef;
+  border-radius:13px;padding:3px 7px;color:#fff;font-size:11px;font-weight:900;}
+.hbox b{color:#ffe066;}
+#pips{display:flex;gap:3px;align-items:center;}
+.pip{width:10px;height:10px;border-radius:50%;background:#ffe066;box-shadow:0 0 4px #fa0;}
+.pip.off{background:#333;box-shadow:none;}
+#hud-btns{display:flex;gap:4px;}
+.hbtn{background:#1a1a2e;border:2px solid #445;border-radius:8px;
+  color:#aaa;font-size:11px;padding:3px 8px;cursor:pointer;-webkit-appearance:none;}
+
+/* ULTIMATE GAUGE */
+#ult-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;padding:0 5px;}
+#ult-gauge-wrap{flex:1;max-width:280px;height:14px;background:#1a1a2e;
+  border-radius:8px;border:2px solid #444;overflow:hidden;position:relative;}
+#ult-gauge-fill{height:100%;width:0%;border-radius:6px;
+  background:linear-gradient(90deg,#fa0,#f50,#f0f);transition:width .2s;
+  box-shadow:0 0 8px #fa0;}
+#ult-gauge-fill.ready{animation:ultpulse .6s ease-in-out infinite alternate;}
+@keyframes ultpulse{0%{box-shadow:0 0 6px #fa0;}100%{box-shadow:0 0 18px #f0f,0 0 30px #fa0;}}
+#ult-label{font-size:10px;color:#fa0;font-weight:900;white-space:nowrap;}
+#ult-btn-desk{padding:3px 10px;border-radius:12px;border:2px solid #fa0;
+  background:#2a1000;color:#fa0;font-size:11px;font-weight:900;
+  cursor:pointer;-webkit-appearance:none;white-space:nowrap;}
+#ult-btn-desk.ready{background:#fa0;color:#111;box-shadow:0 0 10px #fa08;
+  animation:ultpulse .6s ease-in-out infinite alternate;}
+#ult-btn-desk:disabled{border-color:#444;background:#111;color:#444;animation:none;}
+
+#auto-row{display:flex;gap:5px;margin-bottom:2px;}
+.atbtn{padding:3px 9px;border-radius:14px;border:2px solid #445;
+  background:#181828;color:#778;font-size:10px;font-weight:900;
+  cursor:pointer;-webkit-appearance:none;}
+.atbtn.on{border-color:#ffe066;background:#2a1a00;color:#ffe066;}
+#stage-badge{font-size:11px;font-weight:900;padding:2px 10px;border-radius:10px;
+  border:2px solid currentColor;margin-bottom:2px;}
+#cw{position:relative;border:3px solid #2ef;border-radius:10px;overflow:hidden;
+  box-shadow:0 0 18px #2ef3;}
+canvas{display:block;}
+#ov{position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(0,5,20,.93);border-radius:8px;z-index:20;gap:9px;padding:16px;}
+#ov h1{font-size:26px;font-weight:900;color:#ffe066;text-shadow:0 0 14px #fa0;text-align:center;}
+#ov p{color:#afc;font-size:11px;text-align:center;line-height:1.9;}
+.gbtn{background:linear-gradient(135deg,#ffe066,#fa0);color:#111;font-weight:900;
+  font-size:14px;border:none;border-radius:40px;padding:9px 28px;
+  cursor:pointer;box-shadow:0 4px 0 #840;-webkit-appearance:none;margin:3px;}
+.gbtn.g2{background:linear-gradient(135deg,#2ef,#0aa);box-shadow:0 4px 0 #055;}
+.gbtn.g3{background:linear-gradient(135deg,#f88,#f44);box-shadow:0 4px 0 #800;}
+
+/* MOBILE CONTROLS */
+#mc{display:none;width:100%;max-width:520px;justify-content:space-between;
+  align-items:center;padding:4px 12px;margin-top:2px;gap:6px;}
+#ja{width:76px;height:76px;border-radius:50%;
+  background:rgba(0,220,200,.1);border:3px solid rgba(0,220,200,.3);
+  position:relative;touch-action:none;user-select:none;flex-shrink:0;}
+#jk{width:30px;height:30px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#fff,#2ef);
+  border:2px solid #0aa;position:absolute;left:23px;top:23px;pointer-events:none;}
+#sbtn{width:68px;height:68px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ffe8a0,#fa0);
+  border:4px solid #840;box-shadow:0 5px 0 #520;
+  font-size:20px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;flex-shrink:0;}
+/* Ultimate mobile button */
+#ult-mbtn{width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#2a1000,#1a0800);
+  border:3px solid #fa0;box-shadow:0 4px 0 #600;
+  font-size:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;
+  flex-shrink:0;position:relative;overflow:hidden;}
+#ult-mbtn.ready{background:linear-gradient(135deg,#fa0,#f50);border-color:#fff;
+  box-shadow:0 4px 0 #840,0 0 15px #fa0;animation:ultpulse .6s ease-in-out infinite alternate;}
+#ult-mbtn.off{border-color:#444;opacity:.5;}
+#ult-mring{position:absolute;inset:3px;border-radius:50%;border:2px solid transparent;
+  background:conic-gradient(#fa0 0%,transparent 0%) border-box;}
+@media(pointer:coarse){#mc{display:flex;}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active">
+  <h1>⚡ BRAWL ARENA</h1>
+  <p class="sub">ステージを攻略せよ！</p>
+  <div id="continue-box" style="display:none;">
+    <div class="ctitle">📂 セーブデータあり</div>
+    <div class="cinfo" id="save-info"></div>
+  </div>
+  <button class="menu-btn" id="btn-continue" style="display:none;">▶ 続きから</button>
+  <button class="menu-btn" id="btn-new">🆕 最初から</button>
+  <button class="menu-btn sec" id="btn-howto">❓ 遊び方</button>
+  <div id="howto" style="display:none;margin-top:10px;color:#afc;font-size:11px;text-align:center;line-height:2.0;max-width:290px;">
+    📱 左スティックで移動 / 🔥右ボタンで射撃<br>
+    ⚡ 必殺技ボタンでスキル発動！<br>
+    💻 WASD移動 / クリック射撃 / Qキー必殺技<br>
+    💚 緑ハートを踏むと回復<br>
+    敵を倒して必殺技ゲージを貯めよう！<br>
+    3ウェーブでステージクリア！
+  </div>
+</div>
+
+<!-- CHAR SELECT -->
+<div id="char-screen" class="screen">
+  <h2>🧑 キャラ選択</h2>
+  <p style="color:#8af;font-size:10px;margin-bottom:3px;">必殺技も確認しよう</p>
+  <div id="char-list"></div>
+  <button class="menu-btn" id="btn-start-game">▶ バトル開始！</button>
+  <button class="menu-btn sec" style="margin-top:4px;" id="btn-char-home">← ホームへ</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div id="hud">
+    <div class="hbox">❤️ <b id="hv">100</b></div>
+    <div class="hbox">🏆 <b id="sv">0</b></div>
+    <div class="hbox">🌊 Wave <b id="wv">1/3</b></div>
+    <div id="pips"></div>
+    <div id="hud-btns">
+      <button class="hbtn" id="btn-pause">⏸</button>
+      <button class="hbtn" id="btn-home2">🏠</button>
+    </div>
+  </div>
+  <!-- Ultimate gauge row -->
+  <div id="ult-row">
+    <span id="ult-label">⚡ 必殺技</span>
+    <div id="ult-gauge-wrap"><div id="ult-gauge-fill"></div></div>
+    <button id="ult-btn-desk" disabled>Q</button>
+  </div>
+  <div id="stage-badge"></div>
+  <div id="auto-row">
+    <button class="atbtn" id="btn-aim">🎯 オートエイム: OFF</button>
+    <button class="atbtn" id="btn-fire">🔫 オートファイア: OFF</button>
+  </div>
+  <div id="cw">
+    <canvas id="c"></canvas>
+    <div id="ov">
+      <h1 id="ov-title"></h1>
+      <p id="ov-msg"></p>
+      <div id="ov-btns"></div>
+    </div>
+  </div>
+  <div id="mc">
+    <div id="ja"><div id="jk"></div></div>
+    <!-- Ultimate button (mobile center) -->
+    <div id="ult-mbtn" class="off">
+      <span id="ult-micon">⚡</span>
+      <div id="ult-mring"></div>
+    </div>
+    <div id="sbtn">🔥</div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// STAGES
+// =========================================================
+var STAGES=[
+  {name:'Stage 1: グリーンフォレスト',short:'🌲 フォレスト',bg:'#0e2018',grid:'rgba(0,200,80,.07)',obsFill:'#1e4a28',obsStroke:'#4ef870',txtCol:'#4ef870',
+   obs:[{rx:.05,ry:.06,rw:.18,rh:.18},{rx:.77,ry:.06,rw:.18,rh:.18},{rx:.05,ry:.76,rw:.18,rh:.18},{rx:.77,ry:.76,rw:.18,rh:.18},{rx:.35,ry:.22,rw:.10,rh:.16},{rx:.55,ry:.22,rw:.10,rh:.16},{rx:.35,ry:.62,rw:.10,rh:.16},{rx:.55,ry:.62,rw:.10,rh:.16}]},
+  {name:'Stage 2: サンドメイズ',short:'🏜️ メイズ',bg:'#1e1408',grid:'rgba(220,160,0,.07)',obsFill:'#4a3010',obsStroke:'#faa030',txtCol:'#faa030',
+   obs:[{rx:.04,ry:.08,rw:.52,rh:.10},{rx:.44,ry:.82,rw:.52,rh:.10},{rx:.04,ry:.30,rw:.10,rh:.34},{rx:.86,ry:.36,rw:.10,rh:.34},{rx:.30,ry:.28,rw:.18,rh:.08},{rx:.52,ry:.44,rw:.18,rh:.08},{rx:.30,ry:.60,rw:.18,rh:.08},{rx:.44,ry:.44,rw:.12,rh:.12}]},
+  {name:'Stage 3: アイスコリドー',short:'❄️ アイス',bg:'#060e1a',grid:'rgba(80,160,255,.07)',obsFill:'#0a1e36',obsStroke:'#60b8ff',txtCol:'#60b8ff',
+   obs:[{rx:.04,ry:.04,rw:.28,rh:.09},{rx:.04,ry:.04,rw:.09,rh:.28},{rx:.68,ry:.04,rw:.28,rh:.09},{rx:.87,ry:.04,rw:.09,rh:.28},{rx:.04,ry:.87,rw:.28,rh:.09},{rx:.04,ry:.68,rw:.09,rh:.28},{rx:.68,ry:.87,rw:.28,rh:.09},{rx:.87,ry:.68,rw:.09,rh:.28},{rx:.36,ry:.32,rw:.08,rh:.18},{rx:.56,ry:.32,rw:.08,rh:.18},{rx:.36,ry:.50,rw:.08,rh:.18},{rx:.56,ry:.50,rw:.08,rh:.18}]},
+  {name:'Stage 4: ボルケーノ',short:'🌋 ボルケーノ',bg:'#1a0600',grid:'rgba(255,60,0,.07)',obsFill:'#380a00',obsStroke:'#ff6030',txtCol:'#ff6030',
+   obs:[{rx:.36,ry:.30,rw:.28,rh:.40},{rx:.26,ry:.06,rw:.48,rh:.10},{rx:.26,ry:.84,rw:.48,rh:.10},{rx:.04,ry:.25,rw:.10,rh:.50},{rx:.86,ry:.25,rw:.10,rh:.50}]},
+  {name:'Stage 5: ダンジョン',short:'🏰 ダンジョン',bg:'#0c0c16',grid:'rgba(180,120,255,.07)',obsFill:'#1a1230',obsStroke:'#c090ff',txtCol:'#c090ff',
+   obs:[{rx:.04,ry:.04,rw:.36,rh:.12},{rx:.60,ry:.04,rw:.36,rh:.12},{rx:.04,ry:.84,rw:.36,rh:.12},{rx:.60,ry:.84,rw:.36,rh:.12},{rx:.04,ry:.24,rw:.12,rh:.52},{rx:.84,ry:.24,rw:.12,rh:.52},{rx:.24,ry:.36,rw:.12,rh:.28},{rx:.64,ry:.36,rw:.12,rh:.28},{rx:.44,ry:.42,rw:.12,rh:.16}]},
+];
+var WAVES_PER_STAGE=3;
+
+// =========================================================
+// CHARS + ULTIMATES
+// =========================================================
+var CHARS=[
+  {
+    id:'balanced',name:'バランス',icon:'😎',color:'#2ef',
+    hp:100,spd:1.0,dmg:1.0,ammo:3,reload:1.5,range:1.0,
+    bars:{hp:.6,spd:.6,atk:.6},desc:'全能力バランス型',
+    ult:{
+      name:'💥 フルバースト',
+      desc:'全16方向に強力な弾を一斉発射！',
+      fn:'fullburst'
+    }
+  },
+  {
+    id:'tank',name:'タンク',icon:'🛡️',color:'#fa3',
+    hp:180,spd:.65,dmg:1.5,ammo:2,reload:2.0,range:.85,
+    bars:{hp:1,spd:.3,atk:.9},desc:'高HP・高火力・低速',
+    ult:{
+      name:'🌊 アイアンフォート',
+      desc:'2秒無敵 + 衝撃波で周囲の敵に大ダメージ！',
+      fn:'ironfort'
+    }
+  },
+  {
+    id:'speeder',name:'スピーダー',icon:'⚡',color:'#a8f',
+    hp:65,spd:1.6,dmg:.7,ammo:4,reload:1.0,range:1.0,
+    bars:{hp:.3,spd:1,atk:.4},desc:'超高速・多弾数',
+    ult:{
+      name:'⚡ ライトニングダッシュ',
+      desc:'2秒間超高速！触れた敵を自動で攻撃！',
+      fn:'lightningdash'
+    }
+  },
+  {
+    id:'sniper',name:'スナイパー',icon:'🎯',color:'#f55',
+    hp:80,spd:.9,dmg:2.0,ammo:1,reload:1.8,range:1.5,
+    bars:{hp:.4,spd:.55,atk:1},desc:'超高火力・長射程',
+    ult:{
+      name:'🎯 デッドアイ',
+      desc:'画面を3本の巨大ビームが貫通！即死級ダメージ！',
+      fn:'deadeye'
+    }
+  },
+];
+var selChar=0;
+
+// char cards
+(function(){
+  var el=document.getElementById('char-list');
+  for(var i=0;i<CHARS.length;i++){
+    (function(idx){
+      var ch=CHARS[idx];
+      var card=document.createElement('div');
+      card.className='ccard'+(idx===0?' sel':'');
+      card.innerHTML='<div class="icon">'+ch.icon+'</div>'
+        +'<div class="name" style="color:'+ch.color+'">'+ch.name+'</div>'
+        +'<div class="clabel">HP</div><div class="cbar"><div class="cbar-fill" style="width:'+(ch.bars.hp*100)+'%;background:'+ch.color+'"></div></div>'
+        +'<div class="clabel">速度</div><div class="cbar"><div class="cbar-fill" style="width:'+(ch.bars.spd*100)+'%;background:#2ef"></div></div>'
+        +'<div class="clabel">攻撃</div><div class="cbar"><div class="cbar-fill" style="width:'+(ch.bars.atk*100)+'%;background:#f55"></div></div>'
+        +'<div class="ult-name">'+ch.ult.name+'</div>'
+        +'<div class="ult-desc">'+ch.ult.desc+'</div>';
+      card.addEventListener('click',function(){
+        selChar=idx;
+        el.querySelectorAll('.ccard').forEach(function(c){c.className='ccard';});
+        card.className='ccard sel';
+      });
+      el.appendChild(card);
+    })(i);
+  }
+})();
+
+// =========================================================
+// SAVE
+// =========================================================
+var SAVE_KEY='brawlarena_v4';
+function saveGame(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({
+    charId:CHARS[selChar].id,stageIdx:stageIdx,waveInStage:waveInStage,
+    globalWave:globalWave,score:score,hp:Math.round(player.hp),
+    ultCharge:ultCharge
+  }));}catch(e){}
+}
+function loadSave(){
+  try{var r=localStorage.getItem(SAVE_KEY);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+function deleteSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function updateHomeSave(){
+  var sv=loadSave();
+  var cbox=document.getElementById('continue-box'),cbtn=document.getElementById('btn-continue');
+  if(sv){
+    cbox.style.display='block';cbtn.style.display='block';
+    var stg=STAGES[Math.min(sv.stageIdx,STAGES.length-1)];
+    document.getElementById('save-info').innerHTML=stg.short+' / Wave '+sv.globalWave+'<br>スコア: '+sv.score+' / HP: '+sv.hp;
+  } else {cbox.style.display='none';cbtn.style.display='none';}
+}
+
+// =========================================================
+// SCREEN NAV
+// =========================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.className='screen';});
+  document.getElementById(id).className='screen active';
+}
+document.getElementById('btn-new').addEventListener('click',function(){deleteSave();updateHomeSave();showScreen('char-screen');});
+document.getElementById('btn-continue').addEventListener('click',function(){
+  var sv=loadSave();if(!sv){updateHomeSave();return;}
+  for(var i=0;i<CHARS.length;i++)if(CHARS[i].id===sv.charId){selChar=i;break;}
+  showScreen('game-screen');startFromSave(sv);
+});
+document.getElementById('btn-howto').addEventListener('click',function(){
+  var h=document.getElementById('howto');h.style.display=h.style.display==='none'?'block':'none';
+});
+document.getElementById('btn-char-home').addEventListener('click',function(){showScreen('home-screen');updateHomeSave();});
+document.getElementById('btn-start-game').addEventListener('click',function(){showScreen('game-screen');startFresh();});
+document.getElementById('btn-home2').addEventListener('click',function(){gs='menu';showScreen('home-screen');hideOv();updateHomeSave();});
+document.getElementById('btn-pause').addEventListener('click',togglePause);
+var autoAim=false,autoFire=false;
+document.getElementById('btn-aim').addEventListener('click',function(){
+  autoAim=!autoAim;this.textContent='🎯 オートエイム: '+(autoAim?'ON':'OFF');this.className='atbtn'+(autoAim?' on':'');
+});
+document.getElementById('btn-fire').addEventListener('click',function(){
+  autoFire=!autoFire;this.textContent='🔫 オートファイア: '+(autoFire?'ON':'OFF');this.className='atbtn'+(autoFire?' on':'');
+});
+// Ultimate buttons
+document.getElementById('ult-btn-desk').addEventListener('click',function(){activateUltimate();});
+document.getElementById('ult-mbtn').addEventListener('touchstart',function(e){e.preventDefault();activateUltimate();},{passive:false});
+document.addEventListener('keydown',function(e){
+  keys[e.code]=true;
+  if(e.code==='Escape'&&gs==='play')togglePause();
+  if(e.code==='KeyQ'&&gs==='play')activateUltimate();
+});
+document.addEventListener('keyup',function(e){keys[e.code]=false;});
+
+// =========================================================
+// CANVAS
+// =========================================================
+var canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+var W,H,SC;
+function resize(){
+  var mw=Math.min(window.innerWidth-6,600),mh=Math.min(window.innerHeight*.49,400);
+  SC=Math.min(mw/700,mh/500);
+  W=Math.floor(700*SC);H=Math.floor(500*SC);
+  canvas.width=W;canvas.height=H;
+  document.getElementById('cw').style.width=W+'px';
+}
+resize();
+function oval(cx,cy,rx,ry){ctx.save();ctx.translate(cx,cy);ctx.scale(1,ry/rx);ctx.beginPath();ctx.arc(0,0,rx,0,Math.PI*2);ctx.restore();}
+function rr(x,y,w,h,r){
+  if(w<=0||h<=0)return;r=Math.min(r,w/2,h/2);
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+function dist(ax,ay,bx,by){return Math.sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by));}
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
+function getObs(){return STAGES[stageIdx].obs.map(function(o){return{x:o.rx*W,y:o.ry*H,w:o.rw*W,h:o.rh*H};});}
+function rCol(rx,ry,rw,rh,cx,cy,cr){var nx=clamp(cx,rx,rx+rw),ny=clamp(cy,ry,ry+rh);return(cx-nx)*(cx-nx)+(cy-ny)*(cy-ny)<cr*cr;}
+function insideObs(x,y,r,OB){for(var i=0;i<OB.length;i++)if(rCol(OB[i].x,OB[i].y,OB[i].w,OB[i].h,x,y,r))return true;return false;}
+function moveWithSlide(ox,oy,nx,ny,r,OB){
+  nx=clamp(nx,r,W-r);ny=clamp(ny,r,H-r);
+  if(!insideObs(nx,ny,r,OB))return{x:nx,y:ny};
+  if(!insideObs(nx,oy,r,OB))return{x:nx,y:oy};
+  if(!insideObs(ox,ny,r,OB))return{x:ox,y:ny};
+  return{x:ox,y:oy};
+}
+
+// =========================================================
+// INPUT
+// =========================================================
+var keys={},mouse={x:0,y:0,down:false},joy={dx:0,dy:0},fireHeld=false;
+canvas.addEventListener('mousemove',function(e){var r=canvas.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;});
+canvas.addEventListener('mousedown',function(){mouse.down=true;shoot();});
+canvas.addEventListener('mouseup',function(){mouse.down=false;});
+var jEl=document.getElementById('ja'),jKn=document.getElementById('jk'),jId=null,jBx=0,jBy=0,JR=30;
+jEl.addEventListener('touchstart',function(e){e.preventDefault();var t=e.changedTouches[0],r=jEl.getBoundingClientRect();jId=t.identifier;jBx=r.left+r.width/2;jBy=r.top+r.height/2;},{passive:false});
+jEl.addEventListener('touchmove',function(e){
+  e.preventDefault();
+  for(var i=0;i<e.changedTouches.length;i++){
+    var t=e.changedTouches[i];if(t.identifier!==jId)continue;
+    var dx=t.clientX-jBx,dy=t.clientY-jBy,l=Math.sqrt(dx*dx+dy*dy)||1;
+    if(l>JR){dx=dx/l*JR;dy=dy/l*JR;}
+    joy.dx=dx/JR;joy.dy=dy/JR;jKn.style.left=Math.round(23+dx)+'px';jKn.style.top=Math.round(23+dy)+'px';
+  }
+},{passive:false});
+function resetJ(){joy.dx=0;joy.dy=0;jId=null;jKn.style.left='23px';jKn.style.top='23px';}
+jEl.addEventListener('touchend',function(e){for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jId)resetJ();},{passive:false});
+jEl.addEventListener('touchcancel',function(e){for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jId)resetJ();},{passive:false});
+var sBtnEl=document.getElementById('sbtn');
+sBtnEl.addEventListener('touchstart',function(e){e.preventDefault();fireHeld=true;shoot();},{passive:false});
+sBtnEl.addEventListener('touchend',function(e){e.preventDefault();fireHeld=false;},{passive:false});
+sBtnEl.addEventListener('touchcancel',function(e){e.preventDefault();fireHeld=false;},{passive:false});
+
+// =========================================================
+// GAME STATE
+// =========================================================
+var gs='menu';
+var player={},bullets=[],enemies=[],parts=[],exps=[],healItems=[],beams=[],shockwaves=[];
+var score=0,globalWave=1,stageIdx=0,waveInStage=1;
+var ammo=3,maxAmmo=3,reloading=false,reloadT=0,shootCD=0;
+var waveTrans=false,waveT=0;
+var aimTarget=null,aimPulse=0;
+var healTimer=0,HEAL_INT=14;
+var curChar=null;
+
+// Ultimate state
+var ultCharge=0;        // 0.0 ~ 1.0
+var ULT_KILLS=18;       // 何キルで必殺技が貯まるか（2ステージ分の目安）
+var ultReady=false;
+var ultActive=false;    // 発動中フラグ
+var ultTimer=0;         // 発動中の残り時間
+var ultFlash=0;         // 画面フラッシュ
+var dashTrails=[];      // スピーダーの残像
+var stagesCleared=0;    // ステージクリア数
+
+function startFresh(){
+  stageIdx=0;waveInStage=1;globalWave=1;score=0;stagesCleared=0;
+  ultCharge=0;ultReady=false;ultActive=false;ultTimer=0;
+  curChar=CHARS[selChar];buildPlayer(curChar.hp);
+  resetArena();gs='play';updateHUD();updateStageBadge();updateUltUI();
+}
+function startFromSave(sv){
+  stageIdx=Math.min(sv.stageIdx,STAGES.length-1);
+  waveInStage=sv.waveInStage||1;globalWave=sv.globalWave||1;score=sv.score||0;
+  ultCharge=sv.ultCharge||0;ultReady=ultCharge>=1;ultActive=false;ultTimer=0;stagesCleared=0;
+  curChar=CHARS[selChar];buildPlayer(sv.hp||curChar.hp);
+  resetArena();gs='play';updateHUD();updateStageBadge();updateUltUI();
+}
+function buildPlayer(hp){
+  var r=Math.round((curChar.id==='tank'?17:curChar.id==='speeder'?11:14)*SC);
+  var OB=getObs();
+  var starts=[{x:W/2,y:H/2},{x:W/2,y:H*.65},{x:W/2,y:H*.35},{x:W*.65,y:H/2},{x:W*.35,y:H/2},{x:W*.2,y:H*.5},{x:W*.8,y:H*.5},{x:W*.5,y:H*.8}];
+  var px=W/2,py=H/2;
+  for(var i=0;i<starts.length;i++){if(!insideObs(starts[i].x,starts[i].y,r+4,OB)){px=starts[i].x;py=starts[i].y;break;}}
+  player={x:px,y:py,r:r,hp:Math.min(hp,curChar.hp),maxHp:curChar.hp,
+    spd:Math.round(150*SC*curChar.spd),ang:0,inv:0,
+    col:curChar.color,icon:curChar.icon,
+    dmgMul:curChar.dmg,rangeMul:curChar.range,reloadTime:curChar.reload,
+    ultFn:curChar.ult.fn};
+  maxAmmo=curChar.ammo;ammo=maxAmmo;reloading=false;reloadT=0;shootCD=0;
+}
+function resetArena(){
+  bullets=[];enemies=[];parts=[];exps=[];healItems=[];beams=[];shockwaves=[];dashTrails=[];
+  waveTrans=false;waveT=0;aimTarget=null;aimPulse=0;healTimer=HEAL_INT;
+  ultActive=false;ultTimer=0;ultFlash=0;
+  spawnWave();
+}
+
+function safePos(r,OB,minD){
+  for(var i=0;i<80;i++){
+    var m=r+8,x=m+Math.random()*(W-m*2),y=m+Math.random()*(H-m*2);
+    if(!insideObs(x,y,r+6,OB)&&dist(x,y,player.x,player.y)>minD)return{x:x,y:y};
+  }
+  for(var j=0;j<40;j++){
+    var edge=Math.floor(Math.random()*4),m2=r+10,x2,y2;
+    if(edge===0){x2=m2+Math.random()*(W-m2*2);y2=m2;}
+    else if(edge===1){x2=W-m2;y2=m2+Math.random()*(H-m2*2);}
+    else if(edge===2){x2=m2+Math.random()*(W-m2*2);y2=H-m2;}
+    else{x2=m2;y2=m2+Math.random()*(H-m2*2);}
+    if(!insideObs(x2,y2,r+6,OB)&&dist(x2,y2,player.x,player.y)>minD*0.6)return{x:x2,y:y2};
+  }
+  return{x:W*.15,y:H*.15};
+}
+function spawnWave(){
+  var OB=getObs();enemies=[];
+  var n=Math.min(3+globalWave*2,13);
+  for(var i=0;i<n;i++){
+    var type='grunt';
+    if(globalWave>=2&&Math.random()<.3)type='tank';
+    if(globalWave>=3&&Math.random()<.3)type='speeder';
+    var C={
+      grunt:{hp:40,mhp:40,spd:.095,r:.022,col:'#f55',rng:.34,rt:2.5,dmg:11,pts:10},
+      tank:{hp:110,mhp:110,spd:.055,r:.030,col:'#fa3',rng:.28,rt:3.5,dmg:20,pts:25},
+      speeder:{hp:25,mhp:25,spd:.175,r:.017,col:'#a8f',rng:.25,rt:2.0,dmg:8,pts:15},
+    }[type];
+    var diff=1+globalWave*.10,er=Math.round(C.r*Math.min(W,H));
+    var pos=safePos(er,OB,W*.28);
+    enemies.push({x:pos.x,y:pos.y,hp:C.hp*diff,mhp:C.mhp*diff,
+      spd:C.spd*Math.min(W,H),r:er,col:C.col,rng:C.rng*W,rt:C.rt,dmg:C.dmg,pts:C.pts,
+      type:type,ang:0,st:Math.random()*C.rt,stun:0,stuckT:0,sideDir:Math.random()<.5?1:-1});
+  }
+}
+function spawnHeal(){
+  var OB=getObs(),pos=safePos(14,OB,60);
+  healItems.push({x:pos.x,y:pos.y,r:12,heal:25,pulse:Math.random()*Math.PI*2});
+}
+function nearestEnemy(){
+  var best=null,bd=99999;
+  for(var i=0;i<enemies.length;i++){var d=dist(player.x,player.y,enemies[i].x,enemies[i].y);if(d<bd){bd=d;best=enemies[i];}}
+  return best;
+}
+
+// =========================================================
+// ULTIMATE SYSTEM
+// =========================================================
+// ゲージを増やす（敵を倒すたびに呼ぶ）
+function addUltCharge(amount){
+  if(ultReady)return;
+  ultCharge=Math.min(1,ultCharge+amount);
+  if(ultCharge>=1){ultReady=true;ultCharge=1;}
+  updateUltUI();
+}
+
+function updateUltUI(){
+  var fill=document.getElementById('ult-gauge-fill');
+  var deskBtn=document.getElementById('ult-btn-desk');
+  var mBtn=document.getElementById('ult-mbtn');
+  var pct=Math.round(ultCharge*100);
+  fill.style.width=pct+'%';
+  if(ultReady){
+    fill.className='ready';
+    deskBtn.disabled=false;
+    deskBtn.className='ready';
+    deskBtn.textContent='Q ⚡';
+    mBtn.className='ready';
+    mBtn.querySelector('#ult-micon').textContent=curChar?curChar.ult.name.split(' ')[0]:'⚡';
+  } else {
+    fill.className='';
+    deskBtn.disabled=true;
+    deskBtn.className='';
+    deskBtn.textContent='Q '+pct+'%';
+    mBtn.className='off';
+  }
+  // update label
+  var label=document.getElementById('ult-label');
+  if(curChar) label.textContent='⚡ '+curChar.ult.name;
+}
+
+function activateUltimate(){
+  if(gs!=='play')return;
+  if(!ultReady)return;
+  if(ultActive)return;
+  ultReady=false;ultCharge=0;
+  updateUltUI();
+  // dispatch to character ultimate
+  var fn=player.ultFn;
+  if(fn==='fullburst')    doFullBurst();
+  else if(fn==='ironfort') doIronFort();
+  else if(fn==='lightningdash') doLightningDash();
+  else if(fn==='deadeye') doDeadEye();
+}
+
+// --- 😎 バランス: フルバースト（16方向に強力な弾を一斉発射）---
+function doFullBurst(){
+  ultFlash=0.3;
+  spawnP(player.x,player.y,'#ffe066',30);
+  var dmg=Math.round(60*player.dmgMul);
+  var sp=Math.round(480*SC);
+  for(var i=0;i<16;i++){
+    var a=(i/16)*Math.PI*2;
+    bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      r:Math.round(9*SC),life:1.2,own:'player',dmg:dmg,col:'#ffe066',tr:[],ult:true});
+  }
+  // 追加: 8方向に中間の弾も
+  for(var i=0;i<8;i++){
+    var a2=(i/8)*Math.PI*2+Math.PI/16;
+    bullets.push({x:player.x,y:player.y,vx:Math.cos(a2)*sp*.8,vy:Math.sin(a2)*sp*.8,
+      r:Math.round(7*SC),life:1.0,own:'player',dmg:Math.round(dmg*.6),col:'#fff',tr:[],ult:true});
+  }
+  showUltText('💥 フルバースト！');
+}
+
+// --- 🛡️ タンク: アイアンフォート（無敵 + 衝撃波）---
+function doIronFort(){
+  ultFlash=0.4;
+  ultActive=true;ultTimer=2.0;
+  player.inv=2.5; // 無敵時間を2.5秒に
+  // 衝撃波を発生させる
+  shockwaves.push({x:player.x,y:player.y,r:0,maxR:W*.7,spd:W*.8,life:1,col:'#fa3',dmg:80});
+  spawnP(player.x,player.y,'#fa3',40);
+  showUltText('🌊 アイアンフォート！');
+}
+
+// --- ⚡ スピーダー: ライトニングダッシュ（超高速 + 触れた敵ダメージ）---
+function doLightningDash(){
+  ultFlash=0.25;
+  ultActive=true;ultTimer=2.0;
+  showUltText('⚡ ライトニングダッシュ！');
+}
+
+// --- 🎯 スナイパー: デッドアイ（3本の巨大レーザービーム）---
+function doDeadEye(){
+  ultFlash=0.5;
+  // プレイヤーの向いている方向を中心に3本のビームを発射
+  var baseAng=player.ang;
+  var angles=[baseAng, baseAng-0.22, baseAng+0.22];
+  var dmg=Math.round(200*player.dmgMul);
+  for(var i=0;i<angles.length;i++){
+    beams.push({
+      x:player.x,y:player.y,
+      ang:angles[i],
+      len:0,maxLen:Math.max(W,H)*1.5,
+      spd:Math.max(W,H)*4,
+      width:Math.round(10*SC),
+      life:0.6,maxLife:0.6,
+      col:'#f55',dmg:dmg,
+      hit:[] // 当たった敵のIDを追跡（重複ダメージ防止）
+    });
+  }
+  spawnP(player.x,player.y,'#f55',25);
+  showUltText('🎯 デッドアイ！');
+}
+
+function showUltText(txt){
+  // キャンバス上にULTテキストを表示するためにグローバル変数にセット
+  ultTextStr=txt; ultTextTimer=1.5;
+}
+var ultTextStr='',ultTextTimer=0;
+
+// =========================================================
+// COMBAT
+// =========================================================
+function shoot(){
+  if(gs!=='play')return;
+  if(ammo<=0){startReload();return;}
+  if(shootCD>0)return;
+  var tx=mouse.x,ty=mouse.y;
+  if(autoAim&&aimTarget){tx=aimTarget.x;ty=aimTarget.y;}
+  var dx=tx-player.x,dy=ty-player.y,l=Math.sqrt(dx*dx+dy*dy)||1;
+  bullets.push({x:player.x,y:player.y,
+    vx:dx/l*Math.round(400*SC),vy:dy/l*Math.round(400*SC),
+    r:Math.round(6*SC),life:.9*player.rangeMul,
+    own:'player',dmg:Math.round(25*player.dmgMul),col:player.col,tr:[]});
+  ammo--;shootCD=.22;updatePips();
+  if(ammo<=0)startReload();
+  spawnP(player.x,player.y,player.col,3);
+}
+function startReload(){if(reloading||ammo>=maxAmmo)return;reloading=true;reloadT=player.reloadTime;}
+function eShoot(e){
+  var dx=player.x-e.x,dy=player.y-e.y,l=Math.sqrt(dx*dx+dy*dy)||1;
+  var a=Math.atan2(dy,dx)+(Math.random()-.5)*.25;
+  bullets.push({x:e.x,y:e.y,vx:Math.cos(a)*Math.round(230*SC),vy:Math.sin(a)*Math.round(230*SC),
+    r:Math.round(5*SC),life:1.0,own:'enemy',dmg:e.dmg,col:e.col,tr:[]});
+}
+function killEnemy(ei){
+  var e=enemies[ei];
+  score+=e.pts;
+  addUltCharge(1/ULT_KILLS); // 必殺技ゲージ増加
+  enemies.splice(ei,1);
+  spawnP(e.x,e.y,e.col,18);
+  if(Math.random()<.3)spawnHeal();
+  updateHUD();
+}
+function spawnP(x,y,col,n){
+  n=n||8;for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2,sp=40+Math.random()*70;
+    parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:2+Math.random()*3,life:.55,ml:.55,col:col});
+  }
+}
+function spawnEx(x,y,col){exps.push({x:x,y:y,r:0,life:.4,col:col});}
+
+// =========================================================
+// PAUSE / OVERLAY
+// =========================================================
+function togglePause(){
+  if(gs==='play'){
+    gs='pause';
+    showOv('⏸ ポーズ中','',
+      '<button class="gbtn" id="r1">▶ 再開</button>'+
+      '<button class="gbtn g2" id="r2">💾 セーブして終了</button>'+
+      '<button class="gbtn g3" id="r3">🏠 保存なしで終了</button>');
+    document.getElementById('r1').addEventListener('click',function(){gs='play';hideOv();});
+    document.getElementById('r2').addEventListener('click',function(){saveGame();hideOv();gs='menu';showScreen('home-screen');updateHomeSave();});
+    document.getElementById('r3').addEventListener('click',function(){hideOv();gs='menu';showScreen('home-screen');updateHomeSave();});
+  } else if(gs==='pause'){gs='play';hideOv();}
+}
+function showStageClear(){
+  gs='stageclear';stagesCleared++;
+  var nextIdx=stageIdx+1,isLast=nextIdx>=STAGES.length;
+  showOv('🎉 ステージクリア！',
+    STAGES[stageIdx].short+' 完了！<br>スコア: <b style="color:#ffe066">'+score+'</b>'+
+    (stagesCleared%2===0?'<br><b style="color:#fa0">必殺技ゲージ+大！</b>':''),
+    '<button class="gbtn" id="sc1">'+(isLast?'🏆 もう一度':'▶ 次: '+STAGES[nextIdx].short)+'</button>'+
+    '<button class="gbtn g2" id="sc2">💾 セーブして終了</button>');
+  // 2ステージに1回 → ゲージ大幅増加（1.0 = 即使用可能）
+  if(stagesCleared%2===0){
+    ultCharge=Math.min(1,ultCharge+0.5);
+    if(ultCharge>=1){ultReady=true;ultCharge=1;}
+    updateUltUI();
+  }
+  document.getElementById('sc1').addEventListener('click',function(){
+    hideOv();
+    stageIdx=isLast?0:nextIdx;waveInStage=1;
+    player.hp=Math.min(player.maxHp,player.hp+Math.round(player.maxHp*.4));
+    ammo=maxAmmo;reloading=false;healItems=[];healTimer=HEAL_INT;
+    updateHUD();updateStageBadge();
+    var OB=getObs();if(insideObs(player.x,player.y,player.r,OB))buildPlayer(player.hp);
+    resetArena();gs='play';
+  });
+  document.getElementById('sc2').addEventListener('click',function(){
+    var ts=stageIdx,tw=waveInStage;stageIdx=isLast?0:nextIdx;waveInStage=1;saveGame();
+    stageIdx=ts;waveInStage=tw;hideOv();gs='menu';showScreen('home-screen');updateHomeSave();
+  });
+}
+function showGameOver(){
+  gs='dead';
+  showOv('💀 GAME OVER',
+    'スコア: <b style="color:#ffe066;font-size:16px">'+score+'</b><br>Wave '+globalWave+' / '+STAGES[stageIdx].short,
+    '<button class="gbtn" id="go1">🔄 再挑戦</button>'+
+    '<button class="gbtn g2" id="go2">🧑 キャラ変更</button>'+
+    '<button class="gbtn g3" id="go3">🏠 ホームへ</button>');
+  document.getElementById('go1').addEventListener('click',function(){hideOv();waveInStage=1;buildPlayer(curChar.hp);resetArena();gs='play';updateHUD();});
+  document.getElementById('go2').addEventListener('click',function(){hideOv();showScreen('char-screen');gs='menu';});
+  document.getElementById('go3').addEventListener('click',function(){hideOv();gs='menu';showScreen('home-screen');updateHomeSave();});
+}
+function showOv(t,m,b){document.getElementById('ov-title').textContent=t;document.getElementById('ov-msg').innerHTML=m;document.getElementById('ov-btns').innerHTML=b;document.getElementById('ov').style.display='flex';}
+function hideOv(){document.getElementById('ov').style.display='none';}
+
+// =========================================================
+// MAIN LOOP
+// =========================================================
+var lt=0;
+function loop(ts){
+  var dt=Math.min((ts-lt)/1000,.05);lt=ts;
+  if(gs==='play')update(dt);
+  if(gs==='play'||gs==='pause'||gs==='dead'||gs==='stageclear')draw();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  var OB=getObs();
+
+  // Ultimate timers
+  if(ultFlash>0)ultFlash-=dt;
+  if(ultTextTimer>0)ultTextTimer-=dt;
+  if(ultActive){
+    ultTimer-=dt;
+    if(ultTimer<=0){ultActive=false;if(player.ultFn==='ironfort'&&player.inv<0.3)player.inv=0;}
+  }
+
+  // --- AUTO-AIM ---
+  if(autoAim&&enemies.length>0){
+    aimTarget=nearestEnemy();
+    mouse.x+=(aimTarget.x-mouse.x)*.22;mouse.y+=(aimTarget.y-mouse.y)*.22;aimPulse+=dt*4;
+  } else {aimTarget=null;aimPulse=0;}
+  if(autoFire&&enemies.length>0&&!reloading&&ammo>0&&shootCD<=0){
+    var t2=aimTarget||nearestEnemy();if(t2&&dist(player.x,player.y,t2.x,t2.y)<W*.55)shoot();
+  }
+  if(autoFire&&ammo<=0&&!reloading)startReload();
+
+  // --- PLAYER MOVE ---
+  var mdx=joy.dx,mdy=joy.dy;
+  if(keys['KeyW']||keys['ArrowUp'])mdy-=1;if(keys['KeyS']||keys['ArrowDown'])mdy+=1;
+  if(keys['KeyA']||keys['ArrowLeft'])mdx-=1;if(keys['KeyD']||keys['ArrowRight'])mdx+=1;
+  var ml=Math.sqrt(mdx*mdx+mdy*mdy);if(ml>1){mdx/=ml;mdy/=ml;}
+  if(!autoAim&&Math.sqrt(joy.dx*joy.dx+joy.dy*joy.dy)>.1){mouse.x=player.x+joy.dx*80;mouse.y=player.y+joy.dy*80;}
+
+  // ライトニングダッシュ中は速度3倍
+  var spdMul=(ultActive&&player.ultFn==='lightningdash')?3.0:1.0;
+  var np=moveWithSlide(player.x,player.y,
+    player.x+mdx*player.spd*spdMul*dt,player.y+mdy*player.spd*spdMul*dt,player.r,OB);
+  player.x=np.x;player.y=np.y;
+  player.ang=Math.atan2(mouse.y-player.y,mouse.x-player.x);
+  if(player.inv>0)player.inv-=dt;
+  if(shootCD>0)shootCD-=dt;
+  if((mouse.down||fireHeld)&&shootCD<=0&&ammo>0)shoot();
+  if(reloading){reloadT-=dt;if(reloadT<=0){ammo=maxAmmo;reloading=false;updatePips();}}
+
+  // ライトニングダッシュ: 残像追加 + 接触した敵にダメージ
+  if(ultActive&&player.ultFn==='lightningdash'){
+    dashTrails.push({x:player.x,y:player.y,r:player.r,life:.4,ml:.4,col:'#a8f'});
+    for(var ei=enemies.length-1;ei>=0;ei--){
+      var e=enemies[ei];
+      if(dist(player.x,player.y,e.x,e.y)<player.r+e.r+4){
+        e.hp-=80*dt;spawnP(e.x,e.y,'#a8f',3);
+        if(e.hp<=0){spawnEx(e.x,e.y,e.col);killEnemy(ei);}
+      }
+    }
+  }
+
+  // ダッシュ残像フェード
+  for(var di=dashTrails.length-1;di>=0;di--){
+    dashTrails[di].life-=dt;if(dashTrails[di].life<=0)dashTrails.splice(di,1);
+  }
+
+  // --- SHOCKWAVES (タンク必殺技) ---
+  for(var si=shockwaves.length-1;si>=0;si--){
+    var sw=shockwaves[si];sw.r+=sw.spd*dt;sw.life-=dt;
+    for(var ei=enemies.length-1;ei>=0;ei--){
+      var e=enemies[ei];
+      var d2=dist(sw.x,sw.y,e.x,e.y);
+      if(d2<sw.r+e.r&&d2>sw.r-30){
+        e.hp-=sw.dmg;e.stun=.3;
+        spawnEx(e.x,e.y,e.col);
+        if(e.hp<=0){killEnemy(ei);}
+      }
+    }
+    if(sw.life<=0||sw.r>sw.maxR)shockwaves.splice(si,1);
+  }
+
+  // --- BEAMS (スナイパー必殺技) ---
+  for(var bmi=beams.length-1;bmi>=0;bmi--){
+    var bm=beams[bmi];
+    bm.len=Math.min(bm.len+bm.spd*dt,bm.maxLen);
+    bm.life-=dt;
+    // ビームとの当たり判定
+    for(var ei=enemies.length-1;ei>=0;ei--){
+      var e=enemies[ei];
+      if(bm.hit.indexOf(ei)>=0)continue;
+      // 線分と円の当たり判定
+      var ex2=bm.x+Math.cos(bm.ang)*bm.len,ey2=bm.y+Math.sin(bm.ang)*bm.len;
+      var dx2=ex2-bm.x,dy2=ey2-bm.y,ll=Math.sqrt(dx2*dx2+dy2*dy2)||1;
+      var t=((e.x-bm.x)*dx2+(e.y-bm.y)*dy2)/(ll*ll);
+      t=clamp(t,0,1);
+      var cx3=bm.x+t*dx2,cy3=bm.y+t*dy2;
+      if(dist(cx3,cy3,e.x,e.y)<e.r+bm.width*.5){
+        e.hp-=bm.dmg;bm.hit.push(ei);
+        spawnEx(e.x,e.y,'#f55');spawnP(e.x,e.y,'#f55',10);
+        if(e.hp<=0){killEnemy(ei);}
+      }
+    }
+    if(bm.life<=0)beams.splice(bmi,1);
+  }
+
+  // --- HEALS ---
+  healTimer-=dt;if(healTimer<=0&&enemies.length>0){spawnHeal();healTimer=HEAL_INT+(Math.random()*5-2);}
+  for(var hi=healItems.length-1;hi>=0;hi--){
+    var h=healItems[hi];h.pulse+=dt*3;
+    if(dist(player.x,player.y,h.x,h.y)<player.r+h.r){
+      player.hp=Math.min(player.maxHp,player.hp+h.heal);
+      spawnP(h.x,h.y,'#0f8',14);spawnEx(h.x,h.y,'#0f8');
+      healItems.splice(hi,1);updateHUD();
+    }
+  }
+
+  // --- BULLETS ---
+  for(var bi=bullets.length-1;bi>=0;bi--){
+    var b=bullets[bi];
+    b.tr.push({x:b.x,y:b.y});if(b.tr.length>5)b.tr.shift();
+    b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    if(b.x<b.r||b.x>W-b.r)b.vx*=-1;if(b.y<b.r||b.y>H-b.r)b.vy*=-1;
+    var gone=false;
+    for(var oi=0;oi<OB.length;oi++){
+      if(rCol(OB[oi].x,OB[oi].y,OB[oi].w,OB[oi].h,b.x,b.y,b.r)){
+        spawnP(b.x,b.y,b.col,4);bullets.splice(bi,1);gone=true;break;
+      }
+    }
+    if(gone)continue;
+    if(b.life<=0){bullets.splice(bi,1);continue;}
+    if(b.own==='enemy'&&player.inv<=0){
+      if(dist(b.x,b.y,player.x,player.y)<player.r+b.r){
+        player.hp-=b.dmg;player.inv=.8;
+        spawnP(b.x,b.y,'#f44',10);spawnEx(b.x,b.y,'#f44');
+        bullets.splice(bi,1);updateHUD();
+        if(player.hp<=0){showGameOver();return;}continue;
+      }
+    }
+    if(b.own==='player'){
+      var hit=false;
+      for(var ei=enemies.length-1;ei>=0;ei--){
+        var e=enemies[ei];
+        if(dist(b.x,b.y,e.x,e.y)<e.r+b.r){
+          e.hp-=b.dmg;e.stun=.12;
+          spawnP(b.x,b.y,e.col,8);spawnEx(b.x,b.y,e.col);
+          bullets.splice(bi,1);
+          if(e.hp<=0){killEnemy(ei);}
+          hit=true;break;
+        }
+      }
+      if(hit)continue;
+    }
+  }
+
+  // --- ENEMIES ---
+  for(var ei=0;ei<enemies.length;ei++){
+    var e=enemies[ei];if(e.stun>0){e.stun-=dt;continue;}
+    var d=dist(e.x,e.y,player.x,player.y),toP=Math.atan2(player.y-e.y,player.x-e.x);
+    e.ang=toP;e.stuckT+=dt;
+    var angles=[toP,toP+e.sideDir*Math.PI*.35,toP-e.sideDir*Math.PI*.35,toP+e.sideDir*Math.PI*.65,toP-e.sideDir*Math.PI*.65,toP+Math.PI*.5,toP-Math.PI*.5,toP+Math.PI*.8,toP-Math.PI*.8,toP+Math.PI];
+    var moved=false;
+    for(var ai=0;ai<angles.length;ai++){
+      var nx2=clamp(e.x+Math.cos(angles[ai])*e.spd*dt,e.r+1,W-e.r-1);
+      var ny2=clamp(e.y+Math.sin(angles[ai])*e.spd*dt,e.r+1,H-e.r-1);
+      if(!insideObs(nx2,ny2,e.r,OB)){
+        e.x=nx2;e.y=ny2;if(ai===0)e.stuckT=Math.max(0,e.stuckT-dt*2);moved=true;break;
+      }
+    }
+    if(e.stuckT>1.5){e.sideDir*=-1;e.stuckT=0;}
+    if(!moved){for(var pa=0;pa<16;pa++){var pang=pa*Math.PI/8,px2=clamp(e.x+Math.cos(pang)*(e.r+2),e.r,W-e.r),py2=clamp(e.y+Math.sin(pang)*(e.r+2),e.r,H-e.r);if(!insideObs(px2,py2,e.r,OB)){e.x=px2;e.y=py2;break;}}}
+    e.st-=dt;if(e.st<=0&&d<e.rng){eShoot(e);e.st=e.rt*(.8+Math.random()*.4);}
+  }
+
+  // particles + exps
+  for(var pi=parts.length-1;pi>=0;pi--){var p=parts[pi];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.83;p.vy*=.83;p.life-=dt;if(p.life<=0)parts.splice(pi,1);}
+  for(var xi=exps.length-1;xi>=0;xi--){var ex=exps[xi];ex.r+=130*SC*dt;ex.life-=dt;if(ex.life<=0)exps.splice(xi,1);}
+
+  // wave clear
+  if(enemies.length===0&&!waveTrans){
+    waveTrans=true;waveT=1.8;
+    player.hp=Math.min(player.maxHp,player.hp+Math.round(player.maxHp*.2));
+    ammo=maxAmmo;reloading=false;updatePips();
+  }
+  if(waveTrans){waveT-=dt;if(waveT<=0){waveTrans=false;if(waveInStage>=WAVES_PER_STAGE){showStageClear();}else{waveInStage++;globalWave++;spawnWave();updateHUD();}}}
+  document.getElementById('hv').textContent=Math.max(0,Math.round(player.hp));
+}
+
+// =========================================================
+// DRAW
+// =========================================================
+function draw(){
+  var OB=getObs(),stg=STAGES[stageIdx];
+  ctx.fillStyle=stg.bg;ctx.fillRect(0,0,W,H);
+
+  // Ultimate flash overlay
+  if(ultFlash>0){
+    ctx.save();ctx.globalAlpha=ultFlash*.7;
+    ctx.fillStyle=curChar?curChar.color:'#fff';ctx.fillRect(0,0,W,H);ctx.restore();
+  }
+
+  // grid
+  ctx.strokeStyle=stg.grid;ctx.lineWidth=1;var g=Math.round(36*SC);
+  for(var x=0;x<W;x+=g){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(var y=0;y<H;y+=g){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // obstacles
+  for(var i=0;i<OB.length;i++){
+    var o=OB[i];
+    ctx.fillStyle='rgba(0,0,0,.35)';rr(o.x+4,o.y+5,o.w,o.h,4);ctx.fill();
+    ctx.fillStyle=stg.obsFill;ctx.strokeStyle=stg.obsStroke;ctx.lineWidth=2;
+    rr(o.x,o.y,o.w,o.h,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.05)';rr(o.x+2,o.y+2,o.w-4,Math.min(o.h*.4,8),3);ctx.fill();
+  }
+
+  // heals
+  for(var hi=0;hi<healItems.length;hi++){
+    var h=healItems[hi],hp2=Math.sin(h.pulse)*.5+.5;
+    ctx.save();ctx.globalAlpha=.25+hp2*.3;ctx.fillStyle='#0f8';ctx.beginPath();ctx.arc(h.x,h.y,h.r+5+hp2*4,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;var hg=ctx.createRadialGradient(h.x,h.y,0,h.x,h.y,h.r);hg.addColorStop(0,'#cfffea');hg.addColorStop(1,'#00c060');
+    ctx.fillStyle=hg;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,h.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#fff';ctx.lineWidth=Math.round(2.5*SC);var cl=h.r*.55;
+    ctx.beginPath();ctx.moveTo(h.x-cl,h.y);ctx.lineTo(h.x+cl,h.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(h.x,h.y-cl);ctx.lineTo(h.x,h.y+cl);ctx.stroke();
+    ctx.restore();
+  }
+
+  // shockwaves
+  for(var si=0;si<shockwaves.length;si++){
+    var sw=shockwaves[si];ctx.save();
+    ctx.globalAlpha=sw.life*.8;ctx.strokeStyle=sw.col;ctx.lineWidth=Math.round(6*SC);
+    ctx.shadowColor=sw.col;ctx.shadowBlur=20;
+    ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=sw.life*.15;ctx.fillStyle=sw.col;ctx.fill();
+    ctx.restore();
+  }
+
+  // beams (スナイパー必殺技)
+  for(var bmi=0;bmi<beams.length;bmi++){
+    var bm=beams[bmi];var ba=bm.life/bm.maxLife;
+    var ex2=bm.x+Math.cos(bm.ang)*bm.len,ey2=bm.y+Math.sin(bm.ang)*bm.len;
+    ctx.save();
+    // 外側グロー
+    ctx.globalAlpha=ba*.4;ctx.strokeStyle=bm.col;ctx.lineWidth=bm.width*3;
+    ctx.shadowColor=bm.col;ctx.shadowBlur=30;
+    ctx.beginPath();ctx.moveTo(bm.x,bm.y);ctx.lineTo(ex2,ey2);ctx.stroke();
+    // コア
+    ctx.globalAlpha=ba;ctx.strokeStyle='#fff';ctx.lineWidth=bm.width*.5;ctx.shadowBlur=0;
+    ctx.beginPath();ctx.moveTo(bm.x,bm.y);ctx.lineTo(ex2,ey2);ctx.stroke();
+    ctx.restore();
+  }
+
+  // dash trails (スピーダー必殺技)
+  for(var di=0;di<dashTrails.length;di++){
+    var dt2=dashTrails[di];ctx.save();ctx.globalAlpha=dt2.life/dt2.ml*.6;
+    ctx.fillStyle=dt2.col;ctx.shadowColor=dt2.col;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(dt2.x,dt2.y,dt2.r*(dt2.life/dt2.ml),0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+
+  // auto-aim
+  if(autoAim&&aimTarget&&(gs==='play'||gs==='pause')){
+    var pulse=Math.sin(aimPulse)*.4+.6;
+    ctx.save();ctx.strokeStyle='rgba(255,230,0,'+pulse+')';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);
+    ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(aimTarget.x,aimTarget.y);ctx.stroke();ctx.setLineDash([]);
+    ctx.lineWidth=2;ctx.beginPath();ctx.arc(aimTarget.x,aimTarget.y,aimTarget.r+8+Math.sin(aimPulse)*3,0,Math.PI*2);ctx.stroke();
+    var s=aimTarget.r+13,bl=7;ctx.lineWidth=2.5;ctx.strokeStyle='#ffe066';
+    [[s,s],[-s,s],[s,-s],[-s,-s]].forEach(function(c){
+      var cx2=aimTarget.x+c[0],cy2=aimTarget.y+c[1],sx=c[0]>0?-1:1,sy=c[1]>0?-1:1;
+      ctx.beginPath();ctx.moveTo(cx2+sx*bl,cy2);ctx.lineTo(cx2,cy2);ctx.lineTo(cx2,cy2+sy*bl);ctx.stroke();
+    });ctx.restore();
+  }
+
+  // exps
+  for(var i=0;i<exps.length;i++){
+    var ex=exps[i];ctx.save();ctx.globalAlpha=ex.life*2.2;ctx.strokeStyle=ex.col;ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(ex.x,ex.y,ex.r,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=ex.life*.25;ctx.fillStyle=ex.col;ctx.fill();ctx.restore();
+  }
+  // particles
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];ctx.save();ctx.globalAlpha=p.life/p.ml;ctx.fillStyle=p.col;
+    ctx.beginPath();ctx.arc(p.x,p.y,Math.max(.5,p.r*(p.life/p.ml)),0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+
+  // enemies
+  for(var i=0;i<enemies.length;i++){
+    var e=enemies[i];
+    ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#000';oval(e.x+3,e.y+5,e.r,e.r*.38);ctx.fill();ctx.globalAlpha=1;
+    ctx.translate(e.x,e.y);ctx.rotate(e.ang);
+    var eg=ctx.createRadialGradient(-e.r*.3,-e.r*.3,1,0,0,e.r);eg.addColorStop(0,'rgba(255,255,255,.5)');eg.addColorStop(1,e.col);
+    ctx.fillStyle=eg;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=2;
+    if(e.type==='tank'){rr(-e.r,-e.r,e.r*2,e.r*2,4);}else{ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);}
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle='#555';ctx.strokeStyle='#222';ctx.lineWidth=1;rr(0,-3,e.r+4,6,2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(e.r*.25,-e.r*.3,2.5,0,Math.PI*2);ctx.arc(e.r*.25,e.r*.3,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#222';ctx.beginPath();ctx.arc(e.r*.38,-e.r*.3,1.2,0,Math.PI*2);ctx.arc(e.r*.38,e.r*.3,1.2,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    var bw=e.r*2.6,bh=4,bx=e.x-bw/2,by=e.y-e.r-9;
+    ctx.fillStyle='#222';rr(bx,by,bw,bh,2);ctx.fill();
+    ctx.fillStyle=e.hp/e.mhp>.5?stg.obsStroke:'#f44';rr(bx,by,Math.max(0,bw*(e.hp/e.mhp)),bh,2);ctx.fill();
+  }
+
+  // bullets
+  for(var i=0;i<bullets.length;i++){
+    var b=bullets[i];
+    for(var t=0;t<b.tr.length;t++){ctx.save();ctx.globalAlpha=.08*(t/b.tr.length);ctx.fillStyle=b.col;ctx.beginPath();ctx.arc(b.tr[t].x,b.tr[t].y,b.r*(t/b.tr.length),0,Math.PI*2);ctx.fill();ctx.restore();}
+    ctx.save();
+    if(b.ult){ctx.shadowColor=b.col;ctx.shadowBlur=16;}else{ctx.shadowColor=b.col;ctx.shadowBlur=8;}
+    var bg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);bg.addColorStop(0,'#fff');bg.addColorStop(1,b.col);
+    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+
+  // player
+  if(player.x){
+    var pa=player.inv>0?(Math.sin(Date.now()*.03)*.5+.5):1;
+    // アイアンフォート中は金色オーラ
+    if(ultActive&&player.ultFn==='ironfort'){
+      ctx.save();ctx.globalAlpha=.5+Math.sin(Date.now()*.01)*.3;
+      ctx.strokeStyle='#fa3';ctx.lineWidth=Math.round(5*SC);ctx.shadowColor='#fa3';ctx.shadowBlur=20;
+      ctx.beginPath();ctx.arc(player.x,player.y,player.r+8,0,Math.PI*2);ctx.stroke();ctx.restore();
+    }
+    // ライトニングダッシュ中は紫オーラ
+    if(ultActive&&player.ultFn==='lightningdash'){
+      ctx.save();ctx.globalAlpha=.6;ctx.strokeStyle='#a8f';ctx.lineWidth=Math.round(4*SC);ctx.shadowColor='#a8f';ctx.shadowBlur=20;
+      ctx.beginPath();ctx.arc(player.x,player.y,player.r+6,0,Math.PI*2);ctx.stroke();ctx.restore();
+    }
+    ctx.save();ctx.globalAlpha=pa*.22;ctx.fillStyle='#000';oval(player.x+3,player.y+7,player.r,player.r*.32);ctx.fill();
+    ctx.globalAlpha=pa;ctx.shadowColor=player.col;ctx.shadowBlur=16;
+    ctx.translate(player.x,player.y);ctx.rotate(player.ang);
+    var pg=ctx.createRadialGradient(-3,-3,1,0,0,player.r);
+    pg.addColorStop(0,'#fff');pg.addColorStop(.5,player.col);pg.addColorStop(1,'#0a8');
+    ctx.fillStyle=pg;ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,player.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.shadowBlur=0;ctx.fillStyle='#1a7a5a';ctx.strokeStyle='#0a4a3a';ctx.lineWidth=2;
+    rr(player.r*.2,-4,player.r+6,8,3);ctx.fill();ctx.stroke();
+    ctx.font=Math.round(player.r*.85)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor=player.col;ctx.shadowBlur=5;ctx.fillStyle='#fff';ctx.fillText(player.icon,0,1);
+    ctx.restore();
+    // hp bar
+    var bw=Math.round(46*SC),bh=5,bx=player.x-bw/2,by=player.y+player.r+5;
+    ctx.fillStyle='#111';rr(bx-1,by-1,bw+2,bh+2,3);ctx.fill();ctx.fillStyle='#333';rr(bx,by,bw,bh,2);ctx.fill();
+    var hc=player.hp/player.maxHp>.5?stg.obsStroke:player.hp/player.maxHp>.25?'#fa0':'#f44';
+    ctx.fillStyle=hc;rr(bx,by,Math.max(0,bw*(player.hp/player.maxHp)),bh,2);ctx.fill();
+    if(reloading){
+      var rp=1-(reloadT/player.reloadTime),rw=Math.round(50*SC),rh=5,rxp=player.x-rw/2,ryp=player.y-player.r-16;
+      ctx.fillStyle='rgba(0,0,0,.75)';rr(rxp-1,ryp-1,rw+2,rh+2,3);ctx.fill();ctx.fillStyle='#333';rr(rxp,ryp,rw,rh,2);ctx.fill();
+      ctx.fillStyle='#ffe066';rr(rxp,ryp,rw*rp,rh,2);ctx.fill();
+      ctx.fillStyle='#ffe066';ctx.font='bold '+Math.round(9*SC)+'px Arial';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText('RELOAD',player.x,ryp-2);
+    }
+  }
+
+  // Ultimate activation text
+  if(ultTextTimer>0&&ultTextStr){
+    var ta=Math.min(1,ultTextTimer>.8?(ultTextTimer-.8)/.2:ultTextTimer/.6);
+    var scale=ultTextTimer>.8?1+(1-ta)*.2:1;
+    ctx.save();ctx.globalAlpha=ta;ctx.translate(W/2,H/2-Math.round(50*SC));ctx.scale(scale,scale);
+    ctx.font='900 '+Math.round(22*SC)+'px -apple-system,Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.strokeStyle='#000';ctx.lineWidth=4;ctx.strokeText(ultTextStr,0,0);
+    ctx.fillStyle=curChar?curChar.color:'#fff';ctx.shadowColor=curChar?curChar.color:'#fff';ctx.shadowBlur=16;
+    ctx.fillText(ultTextStr,0,0);ctx.restore();
+  }
+
+  // wave banner
+  if(waveTrans){
+    var al=Math.min(1,waveT>1.2?(1.8-waveT)/.6:waveT/.6);
+    ctx.save();ctx.globalAlpha=al*.92;ctx.fillStyle='rgba(8,12,28,.95)';ctx.fillRect(0,H/2-30,W,60);
+    ctx.fillStyle=stg.txtCol;ctx.font='900 '+Math.round(22*SC)+'px -apple-system,Arial';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor=stg.txtCol;ctx.shadowBlur=12;
+    ctx.fillText('WAVE '+waveInStage+' CLEAR!',W/2,H/2-4);
+    ctx.fillStyle='#afc';ctx.font='700 '+Math.round(11*SC)+'px Arial';ctx.shadowBlur=0;
+    var nm=waveInStage>=WAVES_PER_STAGE?'ステージクリア！':'次のWave: '+(waveInStage+1)+'/'+WAVES_PER_STAGE;
+    ctx.fillText(nm,W/2,H/2+14);ctx.restore();
+  }
+}
+
+// =========================================================
+// HUD
+// =========================================================
+function updateHUD(){
+  document.getElementById('sv').textContent=score;
+  document.getElementById('wv').textContent=waveInStage+'/'+WAVES_PER_STAGE;
+  updatePips();
+}
+function updateStageBadge(){
+  var stg=STAGES[stageIdx],b=document.getElementById('stage-badge');
+  b.textContent=stg.short+' — Stage '+(stageIdx+1)+'/'+STAGES.length;
+  b.style.color=stg.txtCol;b.style.borderColor=stg.txtCol;
+  document.getElementById('cw').style.borderColor=stg.obsStroke;
+  document.getElementById('cw').style.boxShadow='0 0 16px '+stg.obsStroke+'44';
+}
+function updatePips(){
+  var el=document.getElementById('pips');el.innerHTML='';
+  for(var i=0;i<maxAmmo;i++){var d=document.createElement('div');d.className='pip'+(i<ammo?'':' off');el.appendChild(d);}
+}
+
+mouse.x=W/2;mouse.y=H/2;
+updatePips();updateHomeSave();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
